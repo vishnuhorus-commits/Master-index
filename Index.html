@@ -1,1 +1,167 @@
-data:text/html,<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><title>Master Index</title><style>*{box-sizing:border-box}body{background:#0a0c12;font-family:-apple-system;margin:0;padding:16px;color:#e2e8f0}.container{max-width:1000px;margin:0 auto}h1{font-size:1.6rem;color:#c084fc}.card{background:#111827;border-radius:1.5rem;padding:1.25rem;border:1px solid #1f2937;margin-bottom:1rem}textarea{width:100%;background:#030712;border:1px solid #334155;border-radius:1rem;padding:1rem;color:#f1f5f9;font-family:monospace}button{background:#3b82f6;border:none;padding:0.6rem 1.2rem;border-radius:2rem;font-weight:600;color:white;cursor:pointer;margin-top:0.5rem}.stats{display:flex;gap:1rem;margin-top:0.75rem}.stat{background:#1e293b;border-radius:1rem;padding:0.5rem 1rem}.stat-number{font-size:1.5rem;font-weight:bold;color:#facc15}.stat-label{font-size:0.65rem;color:#94a3b8}.toast{position:fixed;bottom:20px;right:20px;background:#10b981;padding:8px 16px;border-radius:40px;opacity:0}</style></head><body><div class="container"><h1>📖 MASTER INDEX</h1><div class="card"><textarea id="pasteArea" rows="10" placeholder="Paste your lines here..."></textarea><button id="mergeBtn">MERGE INTO MASTER</button><div class="stats"><div class="stat"><div class="stat-number" id="pendingCount">0</div><div class="stat-label">To add</div></div><div class="stat"><div class="stat-number" id="masterTotal">0</div><div class="stat-label">Total lines</div></div></div></div><div class="card"><button id="downloadBtn">DOWNLOAD MASTER.txt</button></div></div><div id="toastMsg" class="toast">Done</div><script>const MASTER_KEY="master_index";let masterSet=new Set();function loadMaster(){const s=localStorage.getItem(MASTER_KEY);if(s){try{const arr=JSON.parse(s);masterSet=new Set(arr)}catch(e){}}document.getElementById('masterTotal').textContent=masterSet.size}function saveMaster(){const arr=Array.from(masterSet);localStorage.setItem(MASTER_KEY,JSON.stringify(arr));document.getElementById('masterTotal').textContent=masterSet.size}function addLines(lines){let newCount=0;for(let line of lines){let clean=line.trim().toUpperCase().replace(/\s+/g,' ');if(clean.length>=2&&!masterSet.has(clean)){masterSet.add(clean);newCount++}}if(newCount>0)saveMaster();return newCount}function processPaste(){const text=document.getElementById('pasteArea').value;if(!text.trim())return;const lines=text.split(/\r?\n/);const newCount=addLines(lines);showToast(`Added ${newCount} new lines`);document.getElementById('masterTotal').textContent=masterSet.size;updatePendingCount()}function updatePendingCount(){const text=document.getElementById('pasteArea').value;const lines=text.split(/\r?\n/).filter(l=>l.trim().length>0);document.getElementById('pendingCount').textContent=lines.length}function downloadMaster(){if(masterSet.size===0){showToast("Master is empty",true);return}const arr=Array.from(masterSet).sort();const content=arr.join('\n');const blob=new Blob([content],{type:'text/plain'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`MASTER_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);showToast("Downloaded")}function showToast(msg,isError=false){const t=document.getElementById('toastMsg');t.textContent=msg;t.style.background=isError?'#dc2626':'#10b981';t.style.opacity='1';setTimeout(()=>t.style.opacity='0',1800)}document.getElementById('mergeBtn').addEventListener('click',processPaste);document.getElementById('downloadBtn').addEventListener('click',downloadMaster);document.getElementById('pasteArea').addEventListener('input',updatePendingCount);loadMaster();updatePendingCount();</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Master Index</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { background: #0a0c12; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 16px; color: #e2e8f0; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { font-size: 1.6rem; margin-bottom: 0.25rem; color: #c084fc; }
+        .sub { color: #8ca3b8; margin-bottom: 1.5rem; font-size: 0.85rem; }
+        .card { background: #111827; border-radius: 1.5rem; padding: 1.25rem; border: 1px solid #1f2937; margin-bottom: 1rem; }
+        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 0.75rem; color: #facc15; }
+        textarea { width: 100%; background: #030712; border: 1px solid #334155; border-radius: 1rem; padding: 1rem; color: #f1f5f9; font-size: 0.9rem; font-family: monospace; resize: vertical; }
+        button { background: #3b82f6; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; color: white; cursor: pointer; margin-top: 0.5rem; margin-right: 0.5rem; }
+        button.secondary { background: #4b5563; }
+        button.warning { background: #dc2626; }
+        .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
+        .stat { background: #1e293b; border-radius: 1rem; padding: 0.5rem 1rem; text-align: center; }
+        .stat-number { font-size: 1.5rem; font-weight: bold; color: #facc15; }
+        .stat-label { font-size: 0.65rem; color: #94a3b8; }
+        .log { background: #030712; border-radius: 1rem; padding: 0.75rem; font-family: monospace; font-size: 0.7rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-top: 0.75rem; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; padding: 8px 16px; border-radius: 40px; font-size: 0.8rem; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        hr { border-color: #1f2937; margin: 1rem 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📖 MASTER INDEX</h1>
+    <div class="sub">One file. Grows forever. Never deletes.</div>
+    <div class="card">
+        <h2>📝 PASTE YOUR LINES HERE</h2>
+        <textarea id="pasteArea" rows="12" placeholder="Paste anything here...&#10;&#10;Apple Notes exports&#10;A-Z master files&#10;Rhyme Genie words&#10;ProWritingAid alliterations&#10;&#10;Everything goes into ONE master index."></textarea>
+        <div>
+            <button id="mergeBtn">✨ MERGE INTO MASTER</button>
+            <button id="clearBtn" class="secondary">🗑 Clear</button>
+        </div>
+        <div class="stats">
+            <div class="stat"><div class="stat-number" id="pendingCount">0</div><div class="stat-label">Lines to add</div></div>
+            <div class="stat"><div class="stat-number" id="newAdded">0</div><div class="stat-label">New added</div></div>
+            <div class="stat"><div class="stat-number" id="duplicatesSkipped">0</div><div class="stat-label">Duplicates skipped</div></div>
+        </div>
+    </div>
+    <div class="card">
+        <h2>🏛️ MASTER INDEX</h2>
+        <div class="stats">
+            <div class="stat"><div class="stat-number" id="masterTotal">0</div><div class="stat-label">Total unique lines</div></div>
+            <div class="stat"><div class="stat-number" id="masterLetters">0</div><div class="stat-label">Letters A–Z used</div></div>
+        </div>
+        <div>
+            <button id="downloadBtn">💾 DOWNLOAD MASTER.txt</button>
+            <button id="resetBtn" class="warning">⚠️ RESET MASTER</button>
+        </div>
+        <div class="log" id="logArea">Ready. Paste your lines and click Merge.</div>
+    </div>
+</div>
+<div id="toastMsg" class="toast">✅ Done</div>
+<script>
+    const MASTER_KEY = "master_index";
+    let masterSet = new Set();
+    let duplicateCountTotal = 0;
+    let newAddedTotal = 0;
+    
+    function loadMaster() {
+        const stored = localStorage.getItem(MASTER_KEY);
+        if (stored) {
+            try { const arr = JSON.parse(stored); masterSet = new Set(arr); } catch(e) {}
+        }
+        updateDisplay();
+    }
+    
+    function saveMaster() {
+        const arr = Array.from(masterSet);
+        localStorage.setItem(MASTER_KEY, JSON.stringify(arr));
+        updateDisplay();
+    }
+    
+    function updateDisplay() {
+        document.getElementById('masterTotal').textContent = masterSet.size.toLocaleString();
+        const lettersUsed = new Set();
+        Array.from(masterSet).forEach(line => { const first = line.charAt(0); if (first >= 'A' && first <= 'Z') lettersUsed.add(first); });
+        document.getElementById('masterLetters').textContent = lettersUsed.size;
+        document.getElementById('newAdded').textContent = newAddedTotal;
+        document.getElementById('duplicatesSkipped').textContent = duplicateCountTotal;
+    }
+    
+    function addLinesToMaster(lines) {
+        let newCount = 0;
+        let dupCount = 0;
+        for (let line of lines) {
+            if (!line || line.length < 2) continue;
+            let clean = line.trim().toUpperCase().replace(/\s+/g, ' ');
+            if (masterSet.has(clean)) { dupCount++; }
+            else { masterSet.add(clean); newCount++; }
+        }
+        if (newCount > 0 || dupCount > 0) {
+            saveMaster();
+            newAddedTotal += newCount;
+            duplicateCountTotal += dupCount;
+            updateDisplay();
+        }
+        return { newCount, dupCount };
+    }
+    
+    function processPaste() {
+        const text = document.getElementById('pasteArea').value;
+        if (!text.trim()) { showToast("Nothing to merge. Paste some text first.", true); return; }
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        const result = addLinesToMaster(lines);
+        addToLog(`✨ Merged: +${result.newCount} new, ${result.dupCount} duplicates skipped. Master now has ${masterSet.size.toLocaleString()} lines.`);
+        showToast(`Added ${result.newCount} new lines`);
+        updatePendingCount();
+    }
+    
+    function updatePendingCount() {
+        const text = document.getElementById('pasteArea').value;
+        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+        document.getElementById('pendingCount').textContent = lines.length;
+    }
+    
+    function clearPaste() { document.getElementById('pasteArea').value = ''; updatePendingCount(); showToast("Cleared"); }
+    function downloadMaster() {
+        if (masterSet.size === 0) { showToast("Master is empty", true); return; }
+        const arr = Array.from(masterSet).sort();
+        const content = arr.join('\n');
+        const blob = new Blob([content], {type: 'text/plain'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MASTER_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Master downloaded");
+    }
+    function resetMaster() {
+        if (confirm("⚠️ RESET will delete ALL lines from your master index. This cannot be undone. Are you sure?")) {
+            masterSet.clear(); newAddedTotal = 0; duplicateCountTotal = 0;
+            saveMaster(); updateDisplay();
+            addToLog("🔄 Master index has been reset to empty.");
+            showToast("Master reset");
+        }
+    }
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.style.background = isError ? '#dc2626' : '#10b981';
+        toast.style.opacity = '1';
+        setTimeout(() => { toast.style.opacity = '0'; }, 1800);
+    }
+    function addToLog(msg) {
+        const log = document.getElementById('logArea');
+        log.innerHTML = `📌 ${new Date().toLocaleTimeString()} - ${msg}\n` + log.innerHTML;
+        if (log.children.length > 50) log.lastChild?.remove();
+    }
+    document.getElementById('mergeBtn').addEventListener('click', processPaste);
+    document.getElementById('clearBtn').addEventListener('click', clearPaste);
+    document.getElementById('downloadBtn').addEventListener('click', downloadMaster);
+    document.getElementById('resetBtn').addEventListener('click', resetMaster);
+    document.getElementById('pasteArea').addEventListener('input', updatePendingCount);
+    loadMaster();
+    updatePendingCount();
+    addToLog("Ready. Paste your lines and click Merge.");
+</script>
+</body>
+</html>
