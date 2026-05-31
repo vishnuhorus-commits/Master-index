@@ -17,24 +17,40 @@
         button { background: #3b82f6; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; color: white; cursor: pointer; margin-top: 0.5rem; margin-right: 0.5rem; }
         button.secondary { background: #4b5563; }
         button.warning { background: #dc2626; }
+        button.upload { background: #10b981; }
         .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
         .stat { background: #1e293b; border-radius: 1rem; padding: 0.5rem 1rem; text-align: center; }
         .stat-number { font-size: 1.5rem; font-weight: bold; color: #facc15; }
         .stat-label { font-size: 0.65rem; color: #94a3b8; }
         .log { background: #030712; border-radius: 1rem; padding: 0.75rem; font-family: monospace; font-size: 0.7rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-top: 0.75rem; }
-        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; padding: 8px 16px; border-radius: 40px; font-size: 0.8rem; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; padding: 8px 16px; border-radius: 40px; font-size: 0.8rem; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000; }
+        .file-input-label { background: #4b5563; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; color: white; cursor: pointer; display: inline-block; margin-top: 0.5rem; margin-right: 0.5rem; font-size: 0.8rem; }
+        .file-input-label:hover { background: #6b7280; }
+        input[type="file"] { display: none; }
         hr { border-color: #1f2937; margin: 1rem 0; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>📖 MASTER INDEX</h1>
-    <div class="sub">One file. Grows forever. Never deletes.</div>
+    <div class="sub">One file. Grows forever. Never deletes. Upload .txt, .csv, or .pdf files.</div>
+    
     <div class="card">
-        <h2>📝 PASTE YOUR LINES HERE</h2>
-        <textarea id="pasteArea" rows="12" placeholder="Paste anything here...&#10;&#10;Apple Notes exports&#10;A-Z master files&#10;Rhyme Genie words&#10;ProWritingAid alliterations&#10;&#10;Everything goes into ONE master index."></textarea>
+        <h2>📂 UPLOAD FILES</h2>
         <div>
-            <button id="mergeBtn">✨ MERGE INTO MASTER</button>
+            <label for="fileUpload" class="file-input-label">📎 CHOOSE FILE (.txt, .csv, .pdf)</label>
+            <input type="file" id="fileUpload" accept=".txt,.csv,.pdf" multiple>
+            <button id="clearFilesBtn" class="secondary">Clear Files</button>
+        </div>
+        <div id="fileList" class="log" style="max-height:80px; margin-top:0.5rem;">No files selected.</div>
+        <button id="uploadMergeBtn" class="upload">🚀 UPLOAD & MERGE SELECTED FILES</button>
+    </div>
+
+    <div class="card">
+        <h2>📝 OR PASTE YOUR LINES HERE</h2>
+        <textarea id="pasteArea" rows="8" placeholder="Paste anything here...&#10;&#10;Apple Notes exports&#10;A-Z master files&#10;Rhyme Genie words&#10;ProWritingAid alliterations"></textarea>
+        <div>
+            <button id="mergeBtn">✨ MERGE PASTED TEXT</button>
             <button id="clearBtn" class="secondary">🗑 Clear</button>
         </div>
         <div class="stats">
@@ -43,6 +59,7 @@
             <div class="stat"><div class="stat-number" id="duplicatesSkipped">0</div><div class="stat-label">Duplicates skipped</div></div>
         </div>
     </div>
+
     <div class="card">
         <h2>🏛️ MASTER INDEX</h2>
         <div class="stats">
@@ -53,15 +70,17 @@
             <button id="downloadBtn">💾 DOWNLOAD MASTER.txt</button>
             <button id="resetBtn" class="warning">⚠️ RESET MASTER</button>
         </div>
-        <div class="log" id="logArea">Ready. Paste your lines and click Merge.</div>
+        <div class="log" id="logArea">Ready. Upload files or paste text, then click Merge.</div>
     </div>
 </div>
 <div id="toastMsg" class="toast">✅ Done</div>
+
 <script>
     const MASTER_KEY = "master_index";
     let masterSet = new Set();
     let duplicateCountTotal = 0;
     let newAddedTotal = 0;
+    let selectedFiles = [];
     
     function loadMaster() {
         const stored = localStorage.getItem(MASTER_KEY);
@@ -104,12 +123,97 @@
         return { newCount, dupCount };
     }
     
+    async function extractTextFromPDF(arrayBuffer) {
+        return new Promise((resolve) => {
+            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = url;
+            document.body.appendChild(iframe);
+            setTimeout(() => {
+                try {
+                    const body = iframe.contentDocument?.body;
+                    const text = body?.innerText || '';
+                    URL.revokeObjectURL(url);
+                    document.body.removeChild(iframe);
+                    resolve(text);
+                } catch(e) {
+                    URL.revokeObjectURL(url);
+                    document.body.removeChild(iframe);
+                    resolve('');
+                }
+            }, 1000);
+        });
+    }
+    
+    async function processFile(file) {
+        try {
+            const text = await file.text();
+            return text;
+        } catch(e) {
+            if (file.type === 'application/pdf') {
+                const buffer = await file.arrayBuffer();
+                return await extractTextFromPDF(buffer);
+            }
+            return '';
+        }
+    }
+    
+    async function processSelectedFiles() {
+        if (selectedFiles.length === 0) {
+            showToast("No files selected. Click 'Choose File' first.", true);
+            return;
+        }
+        
+        let allLines = [];
+        for (let file of selectedFiles) {
+            addToLog(`📄 Processing: ${file.name}`);
+            const content = await processFile(file);
+            if (content) {
+                const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0);
+                allLines.push(...lines);
+                addToLog(`   ${lines.length} lines extracted`);
+            } else {
+                addToLog(`   ⚠️ Could not read ${file.name}`);
+            }
+        }
+        
+        if (allLines.length > 0) {
+            const result = addLinesToMaster(allLines);
+            addToLog(`✨ UPLOAD MERGED: +${result.newCount} new, ${result.dupCount} duplicates skipped. Master now has ${masterSet.size.toLocaleString()} lines.`);
+            showToast(`Added ${result.newCount} lines from ${selectedFiles.length} file(s)`);
+        } else {
+            addToLog(`⚠️ No readable text found in selected files.`);
+            showToast("No readable text found", true);
+        }
+        
+        selectedFiles = [];
+        document.getElementById('fileList').innerHTML = 'No files selected.';
+        document.getElementById('fileUpload').value = '';
+    }
+    
+    function handleFileSelect(event) {
+        selectedFiles = Array.from(event.target.files);
+        const fileNames = selectedFiles.map(f => f.name).join(', ');
+        document.getElementById('fileList').innerHTML = `Selected: ${fileNames}`;
+        addToLog(`📁 Selected ${selectedFiles.length} file(s): ${fileNames}`);
+    }
+    
+    function clearFiles() {
+        selectedFiles = [];
+        document.getElementById('fileUpload').value = '';
+        document.getElementById('fileList').innerHTML = 'No files selected.';
+        addToLog(`🗑 Cleared file selection`);
+        showToast("Files cleared");
+    }
+    
     function processPaste() {
         const text = document.getElementById('pasteArea').value;
         if (!text.trim()) { showToast("Nothing to merge. Paste some text first.", true); return; }
         const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
         const result = addLinesToMaster(lines);
-        addToLog(`✨ Merged: +${result.newCount} new, ${result.dupCount} duplicates skipped. Master now has ${masterSet.size.toLocaleString()} lines.`);
+        addToLog(`✨ PASTE MERGED: +${result.newCount} new, ${result.dupCount} duplicates skipped. Master now has ${masterSet.size.toLocaleString()} lines.`);
         showToast(`Added ${result.newCount} new lines`);
         updatePendingCount();
     }
@@ -121,6 +225,7 @@
     }
     
     function clearPaste() { document.getElementById('pasteArea').value = ''; updatePendingCount(); showToast("Cleared"); }
+    
     function downloadMaster() {
         if (masterSet.size === 0) { showToast("Master is empty", true); return; }
         const arr = Array.from(masterSet).sort();
@@ -134,6 +239,7 @@
         URL.revokeObjectURL(url);
         showToast("Master downloaded");
     }
+    
     function resetMaster() {
         if (confirm("⚠️ RESET will delete ALL lines from your master index. This cannot be undone. Are you sure?")) {
             masterSet.clear(); newAddedTotal = 0; duplicateCountTotal = 0;
@@ -142,6 +248,7 @@
             showToast("Master reset");
         }
     }
+    
     function showToast(msg, isError = false) {
         const toast = document.getElementById('toastMsg');
         toast.textContent = msg;
@@ -149,19 +256,25 @@
         toast.style.opacity = '1';
         setTimeout(() => { toast.style.opacity = '0'; }, 1800);
     }
+    
     function addToLog(msg) {
         const log = document.getElementById('logArea');
         log.innerHTML = `📌 ${new Date().toLocaleTimeString()} - ${msg}\n` + log.innerHTML;
         if (log.children.length > 50) log.lastChild?.remove();
     }
+    
     document.getElementById('mergeBtn').addEventListener('click', processPaste);
     document.getElementById('clearBtn').addEventListener('click', clearPaste);
     document.getElementById('downloadBtn').addEventListener('click', downloadMaster);
     document.getElementById('resetBtn').addEventListener('click', resetMaster);
     document.getElementById('pasteArea').addEventListener('input', updatePendingCount);
+    document.getElementById('fileUpload').addEventListener('change', handleFileSelect);
+    document.getElementById('clearFilesBtn').addEventListener('click', clearFiles);
+    document.getElementById('uploadMergeBtn').addEventListener('click', processSelectedFiles);
+    
     loadMaster();
     updatePendingCount();
-    addToLog("Ready. Paste your lines and click Merge.");
+    addToLog("Ready. Upload .txt, .csv, or .pdf files, or paste text directly.");
 </script>
 </body>
 </html>
