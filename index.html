@@ -1,280 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Master Index</title>
-    <style>
-        * { box-sizing: border-box; }
-        body { background: #0a0c12; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 16px; color: #e2e8f0; }
-        .container { max-width: 1000px; margin: 0 auto; }
-        h1 { font-size: 1.6rem; margin-bottom: 0.25rem; color: #c084fc; }
-        .sub { color: #8ca3b8; margin-bottom: 1.5rem; font-size: 0.85rem; }
-        .card { background: #111827; border-radius: 1.5rem; padding: 1.25rem; border: 1px solid #1f2937; margin-bottom: 1rem; }
-        .card h2 { font-size: 1.1rem; margin-top: 0; margin-bottom: 0.75rem; color: #facc15; }
-        textarea { width: 100%; background: #030712; border: 1px solid #334155; border-radius: 1rem; padding: 1rem; color: #f1f5f9; font-size: 0.9rem; font-family: monospace; resize: vertical; }
-        button { background: #3b82f6; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; color: white; cursor: pointer; margin-top: 0.5rem; margin-right: 0.5rem; }
-        button.secondary { background: #4b5563; }
-        button.warning { background: #dc2626; }
-        button.upload { background: #10b981; }
-        .stats { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.75rem; }
-        .stat { background: #1e293b; border-radius: 1rem; padding: 0.5rem 1rem; text-align: center; }
-        .stat-number { font-size: 1.5rem; font-weight: bold; color: #facc15; }
-        .stat-label { font-size: 0.65rem; color: #94a3b8; }
-        .log { background: #030712; border-radius: 1rem; padding: 0.75rem; font-family: monospace; font-size: 0.7rem; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-top: 0.75rem; }
-        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; padding: 8px 16px; border-radius: 40px; font-size: 0.8rem; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 1000; }
-        .file-input-label { background: #4b5563; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; font-weight: 600; color: white; cursor: pointer; display: inline-block; margin-top: 0.5rem; margin-right: 0.5rem; font-size: 0.8rem; }
-        .file-input-label:hover { background: #6b7280; }
-        input[type="file"] { display: none; }
-        hr { border-color: #1f2937; margin: 1rem 0; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>MASTER INDEX V4 SAFE</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg:#070a12; --card:#111827; --card2:#0b1220; --line:#263244; --text:#e5edf7;
+      --muted:#93a4b8; --gold:#facc15; --purple:#c084fc; --blue:#3b82f6; --green:#10b981;
+      --red:#dc2626; --orange:#f97316; --gray:#4b5563;
+    }
+    body { margin:0; padding:14px; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; }
+    .container { max-width:1100px; margin:0 auto; }
+    h1 { color:var(--purple); margin:0 0 4px; font-size:1.45rem; letter-spacing:.02em; }
+    h2 { margin:0 0 10px; color:var(--gold); font-size:1rem; }
+    .sub { color:var(--muted); font-size:.82rem; line-height:1.35; margin-bottom:12px; }
+    .card { background:linear-gradient(180deg,var(--card),var(--card2)); border:1px solid var(--line); border-radius:18px; padding:14px; margin-bottom:12px; box-shadow:0 10px 30px rgba(0,0,0,.25); }
+    textarea { width:100%; min-height:150px; background:#020617; color:#eef6ff; border:1px solid #334155; border-radius:14px; padding:12px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.86rem; resize:vertical; }
+    button, .fileLabel { border:0; border-radius:999px; color:white; background:var(--blue); padding:10px 14px; margin:6px 6px 0 0; font-weight:700; font-size:.82rem; cursor:pointer; display:inline-block; }
+    button.secondary { background:var(--gray); }
+    button.good { background:var(--green); }
+    button.warn { background:var(--orange); }
+    button.danger { background:var(--red); }
+    input[type="file"] { display:none; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin:10px 0; }
+    .stat { background:#172033; border:1px solid #28364c; border-radius:14px; padding:10px; text-align:center; }
+    .num { font-size:1.35rem; color:var(--gold); font-weight:800; }
+    .label { color:var(--muted); font-size:.68rem; text-transform:uppercase; letter-spacing:.04em; }
+    .log, .preview { background:#020617; color:#dce8f7; border:1px solid #1f2a3b; border-radius:14px; padding:10px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.72rem; white-space:pre-wrap; max-height:180px; overflow:auto; }
+    .preview { max-height:260px; }
+    .letters { display:grid; grid-template-columns:repeat(13,1fr); gap:5px; margin-top:8px; }
+    .letter { background:#182236; border:1px solid #2b3950; border-radius:10px; padding:6px 2px; text-align:center; font-size:.72rem; }
+    .letter b { color:#fff; display:block; }
+    .pill { display:inline-block; padding:4px 8px; border-radius:999px; background:#172033; border:1px solid #2b3950; color:#b7c6d9; font-size:.72rem; margin:2px 4px 2px 0; }
+    .toast { position:fixed; left:14px; right:14px; bottom:16px; z-index:99; background:var(--green); color:#fff; padding:10px 14px; border-radius:999px; text-align:center; font-weight:800; opacity:0; pointer-events:none; transition:.2s; }
+    .small { font-size:.76rem; color:var(--muted); line-height:1.35; }
+    @media (max-width:700px){ .grid,.stats{grid-template-columns:1fr 1fr;} .letters{grid-template-columns:repeat(6,1fr);} }
+  </style>
 </head>
 <body>
 <div class="container">
-    <h1>📖 MASTER INDEX</h1>
-    <div class="sub">One file. Grows forever. Never deletes. Upload .txt, .csv, or .pdf files.</div>
-    
+  <h1>MASTER INDEX V4 SAFE</h1>
+  <div class="sub">Drop or paste text. The app keeps a browser copy, sorts A-Z, skips exact duplicates, protects rejected lines in REVIEW, and downloads backups. Nothing is sent to a server.</div>
+
+  <div class="card">
+    <h2>1. FEED V2 / RAW TEXT INTO V4 CLEANER</h2>
+    <span class="pill">V2 = raw/later writing intake</span><span class="pill">V4 = safe processing engine</span><span class="pill">Memory = this browser storage + downloaded backups</span>
+    <div style="margin-top:8px">
+      <label for="fileUpload" class="fileLabel">CHOOSE TXT / CSV FILES</label>
+      <input type="file" id="fileUpload" accept=".txt,.csv,.text" multiple />
+      <button id="processFilesBtn" class="good">PROCESS SELECTED FILES</button>
+      <button id="clearFilesBtn" class="secondary">CLEAR FILES</button>
+    </div>
+    <div id="fileList" class="log" style="max-height:90px">No files selected yet.</div>
+    <textarea id="pasteArea" placeholder="Paste alliterations, A-Z lists, ProWritingAid output, Rhyme Genie words, or old master text here..."></textarea>
+    <div>
+      <button id="processPasteBtn" class="good">PROCESS PASTED TEXT</button>
+      <button id="clearPasteBtn" class="secondary">CLEAR PASTE BOX</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>2. LIVE RUN STATUS — WHERE EVERYTHING WENT</h2>
+    <div class="stats">
+      <div class="stat"><div class="num" id="masterTotal">0</div><div class="label">MASTER kept</div></div>
+      <div class="stat"><div class="num" id="addedLast">0</div><div class="label">New last run</div></div>
+      <div class="stat"><div class="num" id="dupLast">0</div><div class="label">Duplicates last run</div></div>
+      <div class="stat"><div class="num" id="reviewLast">0</div><div class="label">Review last run</div></div>
+    </div>
+    <div class="letters" id="letterGrid"></div>
+  </div>
+
+  <div class="grid">
     <div class="card">
-        <h2>📂 UPLOAD FILES</h2>
-        <div>
-            <label for="fileUpload" class="file-input-label">📎 CHOOSE FILE (.txt, .csv, .pdf)</label>
-            <input type="file" id="fileUpload" accept=".txt,.csv,.pdf" multiple>
-            <button id="clearFilesBtn" class="secondary">Clear Files</button>
-        </div>
-        <div id="fileList" class="log" style="max-height:80px; margin-top:0.5rem;">No files selected.</div>
-        <button id="uploadMergeBtn" class="upload">🚀 UPLOAD & MERGE SELECTED FILES</button>
+      <h2>3. DOWNLOAD OUTPUTS</h2>
+      <button id="downloadMasterBtn">DOWNLOAD MASTER_AZ_INDEX.txt</button>
+      <button id="downloadLettersBtn">DOWNLOAD A-Z LETTER FILES</button>
+      <button id="downloadReviewBtn" class="warn">DOWNLOAD REVIEW + DUPLICATES</button>
+      <button id="downloadBackupBtn" class="good">DOWNLOAD FULL BACKUP JSON</button>
+      <div class="small">Use MASTER txt for reading. Use FULL BACKUP JSON only to restore the app memory later.</div>
     </div>
 
     <div class="card">
-        <h2>📝 OR PASTE YOUR LINES HERE</h2>
-        <textarea id="pasteArea" rows="8" placeholder="Paste anything here...&#10;&#10;Apple Notes exports&#10;A-Z master files&#10;Rhyme Genie words&#10;ProWritingAid alliterations"></textarea>
-        <div>
-            <button id="mergeBtn">✨ MERGE PASTED TEXT</button>
-            <button id="clearBtn" class="secondary">🗑 Clear</button>
-        </div>
-        <div class="stats">
-            <div class="stat"><div class="stat-number" id="pendingCount">0</div><div class="stat-label">Lines to add</div></div>
-            <div class="stat"><div class="stat-number" id="newAdded">0</div><div class="stat-label">New added</div></div>
-            <div class="stat"><div class="stat-number" id="duplicatesSkipped">0</div><div class="stat-label">Duplicates skipped</div></div>
-        </div>
+      <h2>4. RESTORE / RESET</h2>
+      <label for="restoreUpload" class="fileLabel">RESTORE FULL BACKUP JSON</label>
+      <input type="file" id="restoreUpload" accept=".json" />
+      <button id="hardResetBtn" class="danger">RESET APP MEMORY</button>
+      <div class="small">Reset only clears this browser copy. It does not delete downloaded files, iCloud, Drive, USB, or GitHub.</div>
     </div>
+  </div>
 
+  <div class="grid">
     <div class="card">
-        <h2>🏛️ MASTER INDEX</h2>
-        <div class="stats">
-            <div class="stat"><div class="stat-number" id="masterTotal">0</div><div class="stat-label">Total unique lines</div></div>
-            <div class="stat"><div class="stat-number" id="masterLetters">0</div><div class="stat-label">Letters A–Z used</div></div>
-        </div>
-        <div>
-            <button id="downloadBtn">💾 DOWNLOAD MASTER.txt</button>
-            <button id="resetBtn" class="warning">⚠️ RESET MASTER</button>
-        </div>
-        <div class="log" id="logArea">Ready. Upload files or paste text, then click Merge.</div>
+      <h2>MASTER PREVIEW</h2>
+      <div id="masterPreview" class="preview">No master lines yet.</div>
     </div>
+    <div class="card">
+      <h2>RUN LOG</h2>
+      <div id="logArea" class="log">Ready.</div>
+    </div>
+  </div>
 </div>
-<div id="toastMsg" class="toast">✅ Done</div>
+<div id="toast" class="toast">Done</div>
 
 <script>
-    const MASTER_KEY = "master_index";
-    let masterSet = new Set();
-    let duplicateCountTotal = 0;
-    let newAddedTotal = 0;
-    let selectedFiles = [];
-    
-    function loadMaster() {
-        const stored = localStorage.getItem(MASTER_KEY);
-        if (stored) {
-            try { const arr = JSON.parse(stored); masterSet = new Set(arr); } catch(e) {}
-        }
-        updateDisplay();
-    }
-    
-    function saveMaster() {
-        const arr = Array.from(masterSet);
-        localStorage.setItem(MASTER_KEY, JSON.stringify(arr));
-        updateDisplay();
-    }
-    
-    function updateDisplay() {
-        document.getElementById('masterTotal').textContent = masterSet.size.toLocaleString();
-        const lettersUsed = new Set();
-        Array.from(masterSet).forEach(line => { const first = line.charAt(0); if (first >= 'A' && first <= 'Z') lettersUsed.add(first); });
-        document.getElementById('masterLetters').textContent = lettersUsed.size;
-        document.getElementById('newAdded').textContent = newAddedTotal;
-        document.getElementById('duplicatesSkipped').textContent = duplicateCountTotal;
-    }
-    
-    function addLinesToMaster(lines) {
-        let newCount = 0;
-        let dupCount = 0;
-        for (let line of lines) {
-            if (!line || line.length < 2) continue;
-            let clean = line.trim().toUpperCase().replace(/\s+/g, ' ');
-            if (masterSet.has(clean)) { dupCount++; }
-            else { masterSet.add(clean); newCount++; }
-        }
-        if (newCount > 0 || dupCount > 0) {
-            saveMaster();
-            newAddedTotal += newCount;
-            duplicateCountTotal += dupCount;
-            updateDisplay();
-        }
-        return { newCount, dupCount };
-    }
-    
-    async function extractTextFromPDF(arrayBuffer) {
-        return new Promise((resolve) => {
-            const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = url;
-            document.body.appendChild(iframe);
-            setTimeout(() => {
-                try {
-                    const body = iframe.contentDocument?.body;
-                    const text = body?.innerText || '';
-                    URL.revokeObjectURL(url);
-                    document.body.removeChild(iframe);
-                    resolve(text);
-                } catch(e) {
-                    URL.revokeObjectURL(url);
-                    document.body.removeChild(iframe);
-                    resolve('');
-                }
-            }, 1000);
-        });
-    }
-    
-    async function processFile(file) {
-        try {
-            const text = await file.text();
-            return text;
-        } catch(e) {
-            if (file.type === 'application/pdf') {
-                const buffer = await file.arrayBuffer();
-                return await extractTextFromPDF(buffer);
-            }
-            return '';
-        }
-    }
-    
-    async function processSelectedFiles() {
-        if (selectedFiles.length === 0) {
-            showToast("No files selected. Click 'Choose File' first.", true);
-            return;
-        }
-        
-        let allLines = [];
-        for (let file of selectedFiles) {
-            addToLog(`📄 Processing: ${file.name}`);
-            const content = await processFile(file);
-            if (content) {
-                const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0);
-                allLines.push(...lines);
-                addToLog(`   ${lines.length} lines extracted`);
-            } else {
-                addToLog(`   ⚠️ Could not read ${file.name}`);
-            }
-        }
-        
-        if (allLines.length > 0) {
-            const result = addLinesToMaster(allLines);
-            addToLog(`✨ UPLOAD MERGED: +${result.newCount} new, ${result.dupCount} duplicates skipped. Master now has ${masterSet.size.toLocaleString()} lines.`);
-            showToast(`Added ${result.newCount} lines from ${selectedFiles.length} file(s)`);
-        } else {
-            addToLog(`⚠️ No readable text found in selected files.`);
-            showToast("No readable text found", true);
-        }
-        
-        selectedFiles = [];
-        document.getElementById('fileList').innerHTML = 'No files selected.';
-        document.getElementById('fileUpload').value = '';
-    }
-    
-    function handleFileSelect(event) {
-        selectedFiles = Array.from(event.target.files);
-        const fileNames = selectedFiles.map(f => f.name).join(', ');
-        document.getElementById('fileList').innerHTML = `Selected: ${fileNames}`;
-        addToLog(`📁 Selected ${selectedFiles.length} file(s): ${fileNames}`);
-    }
-    
-    function clearFiles() {
-        selectedFiles = [];
-        document.getElementById('fileUpload').value = '';
-        document.getElementById('fileList').innerHTML = 'No files selected.';
-        addToLog(`🗑 Cleared file selection`);
-        showToast("Files cleared");
-    }
-    
-    function processPaste() {
-        const text = document.getElementById('pasteArea').value;
-        if (!text.trim()) { showToast("Nothing to merge. Paste some text first.", true); return; }
-        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-        const result = addLinesToMaster(lines);
-        addToLog(`✨ PASTE MERGED: +${result.newCount} new, ${result.dupCount} duplicates skipped. Master now has ${masterSet.size.toLocaleString()} lines.`);
-        showToast(`Added ${result.newCount} new lines`);
-        updatePendingCount();
-    }
-    
-    function updatePendingCount() {
-        const text = document.getElementById('pasteArea').value;
-        const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
-        document.getElementById('pendingCount').textContent = lines.length;
-    }
-    
-    function clearPaste() { document.getElementById('pasteArea').value = ''; updatePendingCount(); showToast("Cleared"); }
-    
-    function downloadMaster() {
-        if (masterSet.size === 0) { showToast("Master is empty", true); return; }
-        const arr = Array.from(masterSet).sort();
-        const content = arr.join('\n');
-        const blob = new Blob([content], {type: 'text/plain'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `MASTER_${new Date().toISOString().slice(0,19).replace(/:/g,'-')}.txt`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        showToast("Master downloaded");
-    }
-    
-    function resetMaster() {
-        if (confirm("⚠️ RESET will delete ALL lines from your master index. This cannot be undone. Are you sure?")) {
-            masterSet.clear(); newAddedTotal = 0; duplicateCountTotal = 0;
-            saveMaster(); updateDisplay();
-            addToLog("🔄 Master index has been reset to empty.");
-            showToast("Master reset");
-        }
-    }
-    
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById('toastMsg');
-        toast.textContent = msg;
-        toast.style.background = isError ? '#dc2626' : '#10b981';
-        toast.style.opacity = '1';
-        setTimeout(() => { toast.style.opacity = '0'; }, 1800);
-    }
-    
-    function addToLog(msg) {
-        const log = document.getElementById('logArea');
-        log.innerHTML = `📌 ${new Date().toLocaleTimeString()} - ${msg}\n` + log.innerHTML;
-        if (log.children.length > 50) log.lastChild?.remove();
-    }
-    
-    document.getElementById('mergeBtn').addEventListener('click', processPaste);
-    document.getElementById('clearBtn').addEventListener('click', clearPaste);
-    document.getElementById('downloadBtn').addEventListener('click', downloadMaster);
-    document.getElementById('resetBtn').addEventListener('click', resetMaster);
-    document.getElementById('pasteArea').addEventListener('input', updatePendingCount);
-    document.getElementById('fileUpload').addEventListener('change', handleFileSelect);
-    document.getElementById('clearFilesBtn').addEventListener('click', clearFiles);
-    document.getElementById('uploadMergeBtn').addEventListener('click', processSelectedFiles);
-    
-    loadMaster();
-    updatePendingCount();
-    addToLog("Ready. Upload .txt, .csv, or .pdf files, or paste text directly.");
+const STORAGE_KEY = 'MASTER_INDEX_V4_SAFE_STATE';
+const ATOZ = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+let state = {
+  master: [],
+  duplicates: [],
+  review: [],
+  runLog: [],
+  last: { added:0, duplicates:0, review:0 }
+};
+let selectedFiles = [];
+
+function nowStamp(){ return new Date().toISOString().replace(/[:.]/g,'-').slice(0,19); }
+function todayReadable(){ return new Date().toLocaleString(); }
+function toast(msg, bad=false){ const t=document.getElementById('toast'); t.textContent=msg; t.style.background=bad?'#dc2626':'#10b981'; t.style.opacity='1'; setTimeout(()=>t.style.opacity='0',1800); }
+function log(msg){ state.runLog.unshift(`${todayReadable()} — ${msg}`); state.runLog = state.runLog.slice(0,200); save(); render(); }
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function load(){
+  try { const raw = localStorage.getItem(STORAGE_KEY); if(raw) state = JSON.parse(raw); }
+  catch(e){ console.warn(e); }
+  state.master = Array.isArray(state.master) ? state.master : [];
+  state.duplicates = Array.isArray(state.duplicates) ? state.duplicates : [];
+  state.review = Array.isArray(state.review) ? state.review : [];
+  state.runLog = Array.isArray(state.runLog) ? state.runLog : [];
+  state.last = state.last || { added:0, duplicates:0, review:0 };
+}
+function cleanLine(line){ return String(line || '').trim().toUpperCase().replace(/[\t ]+/g,' ').replace(/\s+$/,''); }
+function wordCount(line){ return line.split(/\s+/).filter(Boolean).length; }
+function isAtoZ(line){ const c=line.charAt(0); return c >= 'A' && c <= 'Z'; }
+function reviewReason(line){
+  if(!line) return 'BLANK';
+  if(wordCount(line) < 2) return 'ONE_WORD_OR_TOO_SHORT';
+  if(!isAtoZ(line)) return 'DOES_NOT_START_A_TO_Z';
+  if(/^\d+$/.test(line)) return 'DIGITS_ONLY';
+  return '';
+}
+function splitLines(text){
+  return String(text||'')
+    .replace(/\r/g,'\n')
+    .split('\n')
+    .map(x=>x.trim())
+    .filter(Boolean);
+}
+function processText(text, sourceName){
+  const incoming = splitLines(text);
+  const masterSet = new Set(state.master);
+  let added=0, dups=0, review=0;
+  const addedLines=[];
+  incoming.forEach((raw, idx)=>{
+    const clean = cleanLine(raw);
+    const reason = reviewReason(clean);
+    if(reason){ state.review.push(`${reason}\t${sourceName}\tLINE_${idx+1}\t${raw}`); review++; return; }
+    if(masterSet.has(clean)){ state.duplicates.push(`DUPLICATE\t${sourceName}\t${clean}`); dups++; return; }
+    masterSet.add(clean); state.master.push(clean); added++; addedLines.push(clean);
+  });
+  state.master = Array.from(new Set(state.master)).sort();
+  state.last = { added, duplicates:dups, review };
+  save(); render();
+  log(`Processed ${sourceName}: ${incoming.length} raw lines → ${added} kept, ${dups} duplicates, ${review} review.`);
+  toast(`Kept ${added}. Duplicates ${dups}. Review ${review}.`);
+}
+async function readFileText(file){
+  if(!file) return '';
+  const name = file.name.toLowerCase();
+  if(name.endsWith('.pdf')) return '';
+  return await file.text();
+}
+async function processFiles(){
+  if(!selectedFiles.length){ toast('Choose files first.', true); return; }
+  for(const file of selectedFiles){
+    const text = await readFileText(file);
+    if(!text){ log(`Skipped ${file.name}: this V4 safe app handles TXT/CSV only. Convert PDF first.`); continue; }
+    processText(text, file.name);
+  }
+  selectedFiles=[];
+  document.getElementById('fileUpload').value='';
+  document.getElementById('fileList').textContent='No files selected yet.';
+}
+function processPaste(){
+  const text=document.getElementById('pasteArea').value;
+  if(!text.trim()){ toast('Paste text first.', true); return; }
+  processText(text, 'PASTE_BOX');
+}
+function buckets(){
+  const b={}; ATOZ.forEach(l=>b[l]=[]);
+  state.master.forEach(line=>{ const c=line.charAt(0); if(b[c]) b[c].push(line); });
+  return b;
+}
+function render(){
+  const b=buckets();
+  document.getElementById('masterTotal').textContent = state.master.length.toLocaleString();
+  document.getElementById('addedLast').textContent = state.last.added || 0;
+  document.getElementById('dupLast').textContent = state.last.duplicates || 0;
+  document.getElementById('reviewLast').textContent = state.last.review || 0;
+  document.getElementById('letterGrid').innerHTML = ATOZ.map(l=>`<div class="letter"><b>${l}</b>${b[l].length}</div>`).join('');
+  const preview = state.master.slice(0,250).join('\n');
+  document.getElementById('masterPreview').textContent = preview || 'No master lines yet.';
+  document.getElementById('logArea').textContent = state.runLog.slice(0,80).join('\n') || 'Ready.';
+}
+function downloadText(name, content){
+  const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+}
+function downloadMaster(){
+  if(!state.master.length){ toast('Master is empty.', true); return; }
+  downloadText(`MASTER_AZ_INDEX_${nowStamp()}.txt`, state.master.join('\n'));
+  log('Downloaded MASTER_AZ_INDEX txt.');
+}
+function downloadLetters(){
+  const b=buckets();
+  let content = '';
+  ATOZ.forEach(l=>{ content += `===== ${l}_MASTER =====\n${b[l].join('\n')}\n\n`; });
+  downloadText(`A_Z_LETTER_FILES_${nowStamp()}.txt`, content.trim()+"\n");
+  log('Downloaded combined A-Z letter file.');
+}
+function downloadReview(){
+  const content = [
+    '===== DUPLICATES_REVIEW =====',
+    ...state.duplicates,
+    '',
+    '===== REVIEW_NOT_DELETED =====',
+    ...state.review,
+    ''
+  ].join('\n');
+  downloadText(`REVIEW_AND_DUPLICATES_${nowStamp()}.txt`, content);
+  log('Downloaded review and duplicates file.');
+}
+function downloadBackup(){
+  const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`MASTER_INDEX_V4_SAFE_BACKUP_${nowStamp()}.json`; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  log('Downloaded full restore backup JSON.');
+}
+async function restoreBackup(ev){
+  const file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  try{
+    const data = JSON.parse(await file.text());
+    if(!Array.isArray(data.master)) throw new Error('Not a V4 backup');
+    state = data; save(); render(); log(`Restored backup from ${file.name}.`); toast('Backup restored.');
+  } catch(e){ toast('Restore failed. Use V4 backup JSON.', true); }
+  ev.target.value='';
+}
+function resetMemory(){
+  if(confirm('RESET APP MEMORY? Download backups first. This clears only this browser storage.')){
+    state={ master:[], duplicates:[], review:[], runLog:[`${todayReadable()} — App memory reset.`], last:{added:0,duplicates:0,review:0} };
+    save(); render(); toast('App memory reset.');
+  }
+}
+
+document.getElementById('fileUpload').addEventListener('change', e=>{
+  selectedFiles = Array.from(e.target.files || []);
+  document.getElementById('fileList').textContent = selectedFiles.length ? selectedFiles.map(f=>`${f.name} (${Math.round(f.size/1024)} KB)`).join('\n') : 'No files selected yet.';
+});
+document.getElementById('processFilesBtn').addEventListener('click', processFiles);
+document.getElementById('clearFilesBtn').addEventListener('click', ()=>{ selectedFiles=[]; document.getElementById('fileUpload').value=''; document.getElementById('fileList').textContent='No files selected yet.'; });
+document.getElementById('processPasteBtn').addEventListener('click', processPaste);
+document.getElementById('clearPasteBtn').addEventListener('click', ()=>{ document.getElementById('pasteArea').value=''; });
+document.getElementById('downloadMasterBtn').addEventListener('click', downloadMaster);
+document.getElementById('downloadLettersBtn').addEventListener('click', downloadLetters);
+document.getElementById('downloadReviewBtn').addEventListener('click', downloadReview);
+document.getElementById('downloadBackupBtn').addEventListener('click', downloadBackup);
+document.getElementById('restoreUpload').addEventListener('change', restoreBackup);
+document.getElementById('hardResetBtn').addEventListener('click', resetMemory);
+load(); render();
+if(!state.runLog.length){ log('Ready. V4 Safe loaded. Feed TXT/CSV or paste text.'); }
 </script>
 </body>
 </html>
